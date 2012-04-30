@@ -1,0 +1,69 @@
+==================================================
+== ZXjatype バンドル v0.5  <2012/05/01>         ==
+==           by「ZR」（八登 崇之/Takayuki YATO）==
+==                      <zrbabbler@yahoo.co.jp> ==
+==================================================
+(This file is encoded in UTF-8,)
+
+■ 対応環境
+
+    ・XeLaTeX2e（0.9995 版以降）
+        ※ oldxetex モードは 0.997 版以降
+    ・前提パッケージ：
+      - etoolbox
+      - xeCJK（CTAN 掲載の版）
+        ※ 2.3.5／2.3.10／2.3.15／2.3.19／2.4.3 版
+
+■ 本ソフトウェアの作者のサイト
+
+    En toi Pythmeni tes TeXnopoleos ～電脳世界の奥底にて～
+    http://zrbabbler.sp.land.to/
+
+■ インストール
+
+    TDS 1.1 に従ったシステムでは、各ファイルを次の場所に移動する。
+    ・*.sty   → $TEXMF/tex/xelatex/zxjatype/
+
+    W32TeX を C:\usr\local にインストールした場合の例。
+    ・*.sty   → C:\usr\local\share\texmf-local\tex\xelatex\zxjatype
+
+--------------------------------------
+  zxjatype パッケージ (v0.5) -- 本体
+--------------------------------------
+
+    まだ解説が書けておりません…。基本的な機能の説明については以下の Web
+    ページで行っていますのでそちらを参照してください。
+
+    ZXjatype パッケージ
+    http://zrbabbler.sp.land.to/zxjatype.html
+
+----------------------------------------
+
+■ 更新履歴
+
+Version 0.5 <2012/05/01>
+  - 「行頭禁則の仮名」+「開き括弧」の間の空きが入らない現象を修正。
+  - xeCJK の「大きな」内部マクロに対してパッチを当てる処理を etoolbox
+    の \patchcmd で行うように変更。
+
+Version 0.4 <2010/08/15>
+  - xeCJK 2.3.10 版/2.3.15 版での動作を確認。
+  - 一部の命令の名前を変更。基本的にこのパッケージで提供される命令の名前は
+    \CJK.. や \xeCJK.. で始まらないようにした。(ただしその結果として、命令
+    の出自によって「接頭辞」がまちまちになってしまっている。)
+
+Version 0.3a <2009/11/18>
+
+Version 0.3  <2009/11/16>
+  - \[no]jafamilyinverbatim 追加。
+  - \textrawja/\textrawen 追加。
+  - rawjatext/rawentext 追加。
+  - bxbase の \Ux/\UI のドライバを追加。
+
+Version 0.2a <2009/11/01>
+  - リリース作業のミスで生じたバグを修正。
+
+Version 0.2  <2009/10/25>
+  - 最初の公開版。
+
+W# EOF

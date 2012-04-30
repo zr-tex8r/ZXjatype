@@ -1,0 +1,423 @@
+%
+% zxjatype.sty
+%
+%%%% package declaration
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{zxjatype}[2012/05/01 v0.5 ZX Japanese typeset]
+\RequirePackage{ifxetex}\RequireXeTeX
+
+%%%% definitions
+\def\zxjt@pkgname{zxjatype}
+\def\zxjt@error{\PackageError\zxjt@pkgname}
+\def\zxjt@warn{\PackageWarningNoLine\zxjt@pkgname}
+\def\zxjt@RedeclareRobustCommand#1{%
+  \let#1\relax\DeclareRobustCommand#1}
+\providecommand*\bxDebug{\@gobble}
+%
+\newcount\zxjt@olspc
+\newcount\zxjt@orspc
+\newcount\zxjt@lspc
+\newcount\zxjt@rspc
+\newcount\zxjt@lbspc
+\newcount\zxjt@raspc
+\newcount\zxjt@cnta
+\newcount\zxjt@cntb
+\newif\ifzxjt@default
+\newif\ifzxjt@oldxetex
+\newif\ifzxjt@checksingle
+\newif\ifzxjt@jafamilyinverbatim
+\newif\ifzxjt@patch@success
+
+%%%% process options
+\DeclareOption{default}{\zxjt@defaulttrue}
+\DeclareOption{nodefault}{\zxjt@defaultfalse}
+\DeclareOption{oldxetex}{\zxjt@oldxetextrue}
+\DeclareOption{CJKchecksingle}{\zxjt@checksingletrue}
+\DeclareOption{noCJKchecksingle}{\zxjt@checksinglefalse}
+\ExecuteOptions{default,CJKchecksingle}
+\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xeCJK}}
+\ProcessOptions\relax
+\ifzxjt@checksingle
+  \PassOptionsToPackage{CJKchecksingle}{xeCJK}
+\fi
+
+%%%% load xeCJK package
+\@ifpackageloaded{xeCJK}{}{%
+  % circumvent check of \XeTeXglyphbounds
+\ifzxjt@oldxetex \ifcsname XeTeXglyphbounds\endcsname
+  \let\XeTeXglyphbounds\@empty
+\fi\fi
+\RequirePackage{xeCJK}%
+\ifx\XeTeXglyphbounds\@empty
+  \let\XeTeXglyphbounds\@undefined
+\fi
+}
+
+%%%% load other required packages
+\RequirePackage{etoolbox}
+
+%% reset codes
+\edef\zxjt@restore@codes{%
+  \catcode33=\the\catcode33%
+  \catcode39=\the\catcode39%
+  \catcode96=\the\catcode96%
+  \catcode126=\the\catcode126%
+  \endlinechar=\the\endlinechar
+\relax}
+\catcode33=12   %<">
+\catcode39=12   %<'>
+\catcode96=12   %<`>
+\catcode126=13  %<~>
+\endlinechar=-1 %
+
+%%-------- Patches to xeCJK's internal macros
+
+\zxjt@patch@successtrue
+% \xeCJK@setkern
+\@gobble{\if}%if-match
+\patchcmd{\xeCJK@setkern}
+ {\fi\ifnum\xeCJK@cnta<0}
+ {\else\zxjt@patch@xeCJK@setkern#1#2\fi\ifnum\xeCJK@cnta<0}
+ {}{\zxjt@patch@successfalse}
+\@gobble{\fi}%if-match
+% \xeCJK@punctrule
+\@gobble{\if\if}%if-match
+\patchcmd{\xeCJK@punctrule}
+ {\fi\xeCJK@cntd=\xeCJK@cntc}
+ {\else\zxjt@patch@xeCJK@punctrule#1{#2}\fi\xeCJK@cntd=\xeCJK@cntc}
+ {}{\zxjt@patch@successfalse}
+%
+\unless\ifzxjt@patch@success
+  \zxjt@error{Failed in patching to xeCJK}
+   {Package loading is aborted right now.}
+  \zxjt@restore@codes
+\expandafter\endinput\fi\relax
+
+%%-------- User interface
+
+%%<*> \zxjapanesestyle
+%% Switches to a setting suitable for Japanese typesetting.
+\newcommand*\zxjapanesestyle{
+  \punctstyle{quasijis}
+  \xeCJKallowbreakbetweenpuncts
+  %\CJKaddspaces
+  \zxusejapaneseparameters
+}
+
+%%<*> \zxusejapaneseparameters
+%% Sets some xeCJK parameters to values suiable for Japanese.
+\newcommand*\zxusejapaneseparameters{
+\def\CJKglue{\hskip \z@ \@plus .08\baselineskip \@minus .008\baselineskip}
+\CJKsetecglue{\hskip 0.25em\@plus 0.15em\@minus 0.05em}
+}
+
+%%<*> \zxuseoriginalparameters
+%% Reets some xeCJK parameters to their original values.
+\newcommand*\zxuseoriginalparameters{
+\def\CJKglue{\hskip \z@ \@plus .08\baselineskip}
+\CJKsetecglue{ }
+}
+
+%%<*> \setjamainfont[<features>]{<font_name>}
+%%<*> \setjasansfont[<features>]{<font_name>}
+%%<*> \setjamonofont[<features>]{<font_name>}
+%%<*> \setjafamilyfont{<CJK_family_name>}[<features>]{<font_name>}
+%% Same as setCJK...font, except that 'Scale=\zxjt@scale' is specified as a feature.
+\def\setjamainfont{\zxjt@newfontfamily{rm}}
+\def\setjasansfont{\zxjt@newfontfamily{sf}}
+\def\setjamonofont{\zxjt@newfontfamily{tt}}
+\def\setjafamilyfont{\zxjt@newfontfamily}
+\def\zxjt@newfontfamily#1{
+  \@ifnextchar[{\zxjt@newfontfamily@a{#1}}
+    {\zxjt@newfontfamily@a{#1}[]}}
+\def\zxjt@newfontfamily@a#1[#2]{
+  \def\zxJaFamilyName{#1}\zxJaFamilyFontHook
+  \xeCJK@newfontfamily@{#1}[Scale=\zxjt@scale,#2]}
+
+%%<*> \jafamily{<CJK_family_name>}
+\let\jafamily\CJKfamily
+\let\zxjafamily\CJKfamily
+
+%% \zxJaFamilyFontHook
+%% Hook set in \setja...font commands. The new family name is
+%% stored in \zxJaFamilyName.
+\let\zxJaFamilyFontHook\@empty
+
+%%<*> \setjafontscale{<real>}
+%% Sets the value of \zxjt@scale, which defaults to 1.
+\def\setjafontscale#1{\def\zxjt@scale{#1}}
+\setjafontscale{1}
+
+%% <*> \>
+\def\>{\ifmmode\mskip\medmuskip\else \CJKecglue\relax \fi}
+
+%%<*> \zxinhibitglue
+%% Removes a intercharacter glue inserted for space adjustment.
+\protected\def\inhibitglue{
+  \relax\leavevmode % build bounadry
+  \ifdim\lastskip=\zxjt@icgprobe@value\relax
+    \unskip\unskip\unskip % removes the adjuster skip plus probe skips
+    \bxDebug{cancel glue right}%
+  \fi
+  \kern-\zxjt@icgprobe@value\kern\zxjt@icgprobe@value % probe for forward check
+}
+\AtBeginDocument{
+  \ifx\<\@undefined \let\<\inhibitglue \fi
+}
+
+%%-------- Define a new punctrule 'quasijis'
+% The punctrule 'quasijis' is a spacing rule which roughly implements the rule
+% descrived in JIS X 4051 on the xeCJK system.
+
+%% \xeCJK@ps@quasijis
+% NB: The package should not depend on its value (10).
+\def\xeCJK@ps@quasijis{10}
+
+%% \zxjt@icgprobe@value
+\def\zxjt@icgprobe@value{10sp}
+
+%% \zxjt@cpar
+\def\zxjt@cpar#1#2{%
+  \ifcsname xeCJK\xeCJK@punctstyle\xeCJK@bboxname @#1@#2\endcsname
+    \csname xeCJK\xeCJK@punctstyle\xeCJK@bboxname @#1@#2\endcsname
+  \else 0
+  \fi\relax
+}
+
+%% \zxjt@patch@xeCJK@setkern
+\def\zxjt@patch@xeCJK@setkern#1#2{
+  \ifnum\xeCJK@punctstyle=\xeCJK@ps@quasijis\relax
+    \zxjt@lbspc=\zxjt@cpar{loglue}{#1}
+    \zxjt@rspc=\zxjt@cpar{roglue}{#1}
+    \zxjt@lspc=\zxjt@cpar{loglue}{#2}
+    \zxjt@raspc=\zxjt@cpar{roglue}{#2}
+    \ifnum\zxjt@lspc=25
+      \xeCJK@cnta=25\relax
+    \else\ifnum\zxjt@rspc=25
+      \xeCJK@cnta=25\relax
+    \else\ifnum\numexpr\zxjt@lbspc+\zxjt@rspc=0\relax
+      \xeCJK@cnta=\numexpr\zxjt@rspc+\zxjt@lspc\relax
+    \else\ifnum\numexpr\zxjt@lspc+\zxjt@raspc=0\relax
+      \xeCJK@cnta=\numexpr\zxjt@rspc+\zxjt@lspc\relax
+    \else
+      \xeCJK@cnta=\numexpr\zxjt@rspc+\zxjt@lspc-50\relax
+      \ifnum\xeCJK@cnta<0 \xeCJK@cnta=0 \fi
+    \fi\fi\fi\fi
+    \bxDebug{<#1>\the\zxjt@rspc+<#2>\the\zxjt@lspc::\the\xeCJK@cnta}
+  \fi
+}
+
+%%%% \zxjt@patch@xeCJK@punctrule
+\def\zxjt@patch@xeCJK@punctrule#1#2{
+  \ifnum\xeCJK@punctstyle=\xeCJK@ps@quasijis\relax
+    \zxjt@olspc=\csname xeCJK@\xeCJK@bboxname @lspace@#1\endcsname\relax
+    \zxjt@orspc=\csname xeCJK@\xeCJK@bboxname @rspace@#1\endcsname\relax
+    % limit sum of both side-bearings to either 0 or 50
+    \zxjt@lspc=0 \zxjt@rspc=0\relax
+    \ifcsname zxjt@jisfullwidth@#1\endcsname
+    \else\ifnum\zxjt@olspc>40\relax
+      \zxjt@lspc=50\relax
+    \else\ifnum\zxjt@orspc>40\relax
+      \zxjt@rspc=50\relax
+    \else
+      \ifnum\zxjt@olspc>15 \ifnum\zxjt@orspc>15\relax
+          \zxjt@lspc=25 \zxjt@rspc=25\relax
+      \fi\fi
+    \fi\fi\fi
+    \xeCJK@cnta=\csname zxjt@#2spc\endcsname
+    \xeCJK@cntc=\xeCJK@cnta
+    \xeCJK@cntd=\xeCJK@cnta
+    \bxDebug{<#1>:\the\zxjt@lspc/\the\zxjt@rspc}
+  \fi
+}
+
+%% \zxjt@jis@fullwidth{<char>}
+\def\zxjt@jis@fullwidth#1{
+  \expandafter\def\csname zxjt@jisfullwidth@#1\endcsname{}
+}
+\zxjt@jis@fullwidth{^^^^ff01}% FULLWIDTH EXCLAMATION MARK
+
+%%------ adjustment for Japanese font scaling
+
+%% \zxjt@lettodimenx{<CSname>}
+\def\zxjt@lettodimenx#1{
+  \expandafter\let\expandafter\zxjt@dimenx\csname#1\endcsname
+}
+
+%% \zxjt@outputglue
+\def\zxjt@outputglue{
+  \ifnum\xeCJK@punctstyle=\xeCJK@ps@quasijis\relax
+    \ifdim\lastkern=\zxjt@icgprobe@value\relax
+      \unkern\unkern
+      \bxDebug{cancel glue left}%
+    \else
+      {\xeCJK@setfont % switch to CJK font
+       \hskip\zxjt@dimenx\space\@minus\zxjt@dimenx
+       \hskip-\zxjt@icgprobe@value\hskip\zxjt@icgprobe@value}
+    \fi
+  \else
+    \hskip\zxjt@dimenx\space\@plus0.1em \@minus0.1em\relax
+  \fi
+}
+
+%% \zxjt@outputkern
+%\def\zxjt@outputkern{
+%  \ifnum\xeCJK@punctstyle=\xeCJK@ps@quasijis\relax
+%    {\xeCJK@setfont % switch to Japanese font
+%     \ifnum\xeCJK@lastcharclass=3 \else \nobreak \fi
+%     \hskip \zxjt@dimenx\space\@minus\zxjt@dimenx}
+%  \else
+%    \kern \zxjt@dimenx
+%    \xeCJKpunctnobreak
+%  \fi
+%}
+
+%% REVISE: \xeCJK@i@ii
+\def\xeCJK@i@ii#1{
+  \xeCJK@punctrule{#1}{l}
+  \zxjt@lettodimenx{xeCJK\xeCJK@punctstyle\xeCJK@bboxname @lglue@#1}
+  \zxjt@outputglue
+  \xeCJK@setprepunct{#1}}
+
+%% REVISE: \xeCJK@afterpostpunct
+\def\xeCJK@afterpostpunct{
+  \vrule width \csname xeCJK\xeCJK@punctstyle\xeCJK@bboxname
+     @rrule@\xeCJK@lastpunct\endcsname depth \z@ height \z@
+  \zxjt@lettodimenx{xeCJK\xeCJK@punctstyle\xeCJK@bboxname @rglue@\xeCJK@lastpunct}
+  \zxjt@outputglue}
+
+%%------ simple glyph adjuster for XeTeX without \XeTeXglyphbounds
+\ifzxjt@oldxetex
+
+\def\zxjt@setpunctbounds#1{
+  \ifcsname zxjt@gadjusttype@#1\endcsname
+    \edef\zxjt@args{\@nameuse
+      {zxjt@gadjustvalue@\@nameuse{zxjt@gadjusttype@#1}}}
+  \else \let\zxjt@args\zxjt@args@zero
+  \fi
+  \expandafter\zxjt@setpunctbounds@a\zxjt@args
+  \expandafter\xdef\csname xeCJK@\xeCJK@bboxname @lspace@#1\endcsname
+    {\zxjt@tmpa}
+  \expandafter\xdef\csname xeCJK@\xeCJK@bboxname @rspace@#1\endcsname
+    {\zxjt@tmpb}}
+\def\zxjt@setpunctbounds@a#1#2{
+  \def\zxjt@tmpa{#1}\def\zxjt@tmpb{#2}}
+\def\zxjt@args@zero{{0}{0}}
+\let\xeCJK@org@setpunctbounds\xeCJK@setpunctbounds
+\let\xeCJK@setpunctbounds\zxjt@setpunctbounds
+
+\@namedef{zxjt@gadjustvalue@L}{{50}{0}}
+\@namedef{zxjt@gadjustvalue@C}{{25}{25}}
+\@namedef{zxjt@gadjustvalue@R}{{0}{50}}
+\def\zxjt@setgadjusttype#1#2{
+  \@for\zxjt@x:={#2}\do{
+    {\lccode`\?="\zxjt@x\relax
+      \lowercase{\gdef\zxjt@tmpa{?}}}
+    \@namedef{zxjt@gadjusttype@\zxjt@tmpa}{#1}}}
+
+\zxjt@setgadjusttype{L}
+  {2018,201C,3008,300A,300C,300E,3010,3014,3016,3018,%
+   301A,301D,FF08,FF3B,FF5B}
+\zxjt@setgadjusttype{R}
+  {2019,201D,3001,3002,3009,300B,300D,300F,3011,3015,%
+   3017,3019,301B,301E,301F,FF09,FF0C,FF0E,FF3D,FF5D}
+\zxjt@setgadjusttype{C}
+  {30FB,FF1A,FF1B}
+
+\fi
+%%------ add hook to \verbatim@font
+
+%%<*> \[no]jafamilyinverbatim
+\let\jafamilyinverbatim\zxjt@jafamilyinverbatimtrue
+\let\nojafamilyinverbatim\zxjt@jafamilyinverbatimfalse
+
+%% \zxjt@verbatim@font
+\def\zxjt@verbatim@font{
+  \ifnum\XeTeXinterchartokenstate>\z@
+    \XeTeXinterchartokenstate\z@
+    \ifzxjt@jafamilyinverbatim
+      \CJKfamily{tt}\xeCJK@setfont
+    \fi
+  \fi}
+\AtBeginDocument{
+  \g@addto@macro\verbatim@font{\zxjt@verbatim@font}
+}
+
+%%------ raw input
+
+%%<*> \textrawja/\textrawen
+\DeclareRobustCommand\textrawja{
+  \zxjt@text@raw{\zxjt@setCJKfont}}
+\DeclareRobustCommand\textrawen{
+  \zxjt@text@raw{\relax}}
+\def\zxjt@text@raw#1#2{
+  \leavevmode\zxjt@boundary{\XeTeXinterchartokenstate\z@#1#2}
+  \zxjt@boundary}
+
+%%<*> rawjatext/rawentext (environment)
+\newenvironment{rawjatext}
+  {\zxjt@raw@text{\zxjt@setCJKfont}}{\zxjt@boundary}
+\newenvironment{rawentext}
+  {\zxjt@raw@text{\relax}}{\zxjt@boundary}
+\def\zxjt@raw@text#1{
+  \zxjt@boundary\XeTeXinterchartokenstate\z@#1}
+
+%% \zxjt@boundary
+\def\zxjt@boundary{\ifhmode\hbox{}\fi}
+
+%% \zxjt@setCJKfont
+% Sometimes needed instead of \xeCJK@setfont.
+\def\zxjt@setCJKfont{
+  \csname xeCJK@font@\xeCJK@family\endcsname}
+
+%%------ other adaptations
+
+% make U+2015 behave similarly as U+2014
+\xeCJK@postPunct{20}{15}
+\expandafter\def\csname xeCJK@specialpunct^^^^2015\endcsname{}
+
+%% fix to \xeCJK@@checksingle
+\def\zxjt@xeCJK@@checksingle{%
+  \ifcat ^^^^3002\@let@token \expandafter\xeCJK@@@checksingle
+  \else \expandafter\xeCJK@setcurrentchar@i \fi}
+\ifx\xeCJK@@checksingle\zxjt@xeCJK@@checksingle
+\def\xeCJK@@checksingle{%
+  \ifcat ^^^^3002\noexpand\@let@token \expandafter\xeCJK@@@checksingle
+  \else \expandafter\xeCJK@setcurrentchar@i \fi}
+\fi
+\let\zxjt@xeCJK@@checksingle\@undefined
+
+%%------ initial settings
+
+% cooperation with BXJS classes
+\ifx\jsDocClass\@undefined\else
+\edef\zxjt@scale{\jsScale}
+%\let\jsInhibitGlue\inhibitglue
+\fi
+
+% drivers for \UI & \Ux
+\def\zxjt@Ux{\char\bxUcv}
+\def\zxjt@Uxh#1{\char"#1 }
+\def\zxjt@UI{{\xeCJK@setfont\char\bxUcv}}
+\def\zxjt@UIh#1{{\xeCJK@setfont\char"#1 }}
+
+% when option 'default' is set
+\ifzxjt@default
+  \zxjapanesestyle
+\fi
+
+% verbatim font
+\jafamilyinverbatim
+
+%%------ backward compatibility
+
+\def\zxjt@compat#1#2{\ifx#1\@undefined \let#1#2\fi}
+\zxjt@compat\xeCJKjapanesestyle\zxjapanesestyle
+\zxjt@compat\xeCJKusejapaneseparameters\zxusejapaneseparameters
+\zxjt@compat\xeCJKuseoriginalparameters\zxuseoriginalparameters
+\zxjt@compat\CJKinhibitglue\inhibitglue
+
+%%------ all done
+\endlinechar `\^^M
+\endinput
+%% EOF
