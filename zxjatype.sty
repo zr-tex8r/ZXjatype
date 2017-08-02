@@ -3,7 +3,7 @@
 %
 %% package declaration
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{zxjatype}[2012/09/09 v0.6 ZX Japanese typeset]
+\ProvidesPackage{zxjatype}[2017/08/02 v0.6a ZX Japanese typeset]
 \RequirePackage{ifxetex}\RequireXeTeX
 
 %% code guards
@@ -367,8 +367,8 @@
   % if \inhibitglue does not seem to have a valid definition, one is provided
   % by this package.
   { ( \cs_if_free_p:N \inhibitglue )
-    || ( \cs_if_eq:p:NN \inhibitglue \scan_stop: )
-    || ( \cs_if_eq:p:NN \inhibitglue \prg_do_nothing: ) }
+    || ( \cs_if_eq_p:NN \inhibitglue \scan_stop: )
+    || ( \cs_if_eq_p:NN \inhibitglue \prg_do_nothing: ) }
   {
     \cs_undefine:N \inhibitglue
     \NewDocumentCommand \inhibitglue {}
