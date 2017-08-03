@@ -44,10 +44,11 @@ All other options are passed to xeCJK.
 Revision History
 ----------------
 
+  * Version 0.6b ‹2017/08/03›
   * Version 0.6a ‹2017/08/02›
-  * Version 0.6 ‹2012/09/09›
-  * Version 0.5 ‹2012/05/01›
-  * Version 0.4 ‹2010/08/15›
+  * Version 0.6  ‹2012/09/09›
+  * Version 0.5  ‹2012/05/01›
+  * Version 0.4  ‹2010/08/15›
   * Version 0.3a ‹2009/11/18›
   * Version 0.3  ‹2009/11/16›
   * Version 0.2a ‹2009/11/01›
