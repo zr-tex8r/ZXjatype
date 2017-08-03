@@ -3,7 +3,7 @@
 %
 %% package declaration
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{zxjatype}[2017/08/02 v0.6a ZX Japanese typeset]
+\ProvidesPackage{zxjatype}[2017/08/03 v0.6b ZX Japanese typeset]
 \RequirePackage{ifxetex}\RequireXeTeX
 
 %% code guards
@@ -49,6 +49,8 @@
 \newif\ifzxjt@default
 \newif\ifzxjt@checksingle
 \newif\ifzxjt@adjustcharclass
+\newif\ifzxjt@kanakinsoku
+\newif\ifzxjt@useinhibitglue
 \providecommand*\bxDebug{\@gobble}
 
 %% process options
@@ -63,6 +65,10 @@
 % effective only in 'new-age' code
 \DeclareOption{adjustcharclass}{\zxjt@adjustcharclasstrue}
 \DeclareOption{noadjustcharclass}{\zxjt@adjustcharclassfalse}
+\DeclareOption{kanakinsoku}{\zxjt@kanakinsokutrue}
+\DeclareOption{nokanakinsoku}{\zxjt@kanakinsokufalse}
+\DeclareOption{useinhibitglue}{\zxjt@useinhibitgluetrue}
+\DeclareOption{nouseinhibitglue}{\zxjt@useinhibitgluefalse}
 %
 \DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xeCJK}}
 \ExecuteOptions{default,CJKchecksingle,adjustcharclass}
@@ -106,6 +112,16 @@
 \bool_new:N \l__zxjt_adjustcharclass_bool
 \ifzxjt@adjustcharclass
     \bool_set_true:N \l__zxjt_adjustcharclass_bool
+\fi
+%% \l__zxjt_kanakinsoku_bool
+\bool_new:N \l__zxjt_kanakinsoku_bool
+\ifzxjt@kanakinsoku
+    \bool_set_true:N \l__zxjt_kanakinsoku_bool
+\fi
+%% \l__zxjt_useinhibitglue_bool
+\bool_new:N \l__zxjt_useinhibitglue_bool
+\ifzxjt@useinhibitglue
+    \bool_set_true:N \l__zxjt_useinhibitglue_bool
 \fi
 
 %%-------------------------------------- error messages
@@ -371,14 +387,20 @@
     || ( \cs_if_eq_p:NN \inhibitglue \prg_do_nothing: ) }
   {
     \cs_undefine:N \inhibitglue
-    \NewDocumentCommand \inhibitglue {}
+    \bool_if:NTF \l__zxjt_useinhibitglue_bool
       {
-        \scan_stop:
-        \__zxjt_leavevmode:
-        % cancels left-side glue
-        \unskip \unskip \unskip
-        % cancels right-side glue to come, which is tricky...
-        \__zxjt_cancel_postglue:
+        \NewDocumentCommand \inhibitglue {}
+          {
+            \scan_stop:
+            \__zxjt_leavevmode:
+            % cancels left-side glue
+            \unskip \unskip \unskip
+            % cancels right-side glue to come, which is tricky...
+            \__zxjt_cancel_postglue:
+          }
+      }
+      {
+        \NewDocumentCommand \inhibitglue {} {}
       }
   }
 
@@ -455,10 +477,10 @@
 
 %%-------------------------------------- char-class adjustment
 
-%% \__zxjt_adjust_charclass:
-\cs_new:Nn \__zxjt_adjust_charclass:
+%% \__zxjt_adjust_charclass:n
+\cs_new:Nn \__zxjt_adjust_charclass:n
   {
-    \xeCJKDeclareCharClass { CJK }
+    \xeCJKDeclareCharClass {#1}
       {
         % Assigning 'FullRight' to small kana letters enables kinsoku at
         % the left side, but sometimes disrupts spacing around them
@@ -467,20 +489,24 @@
         % is criticized as "too strong" to use as default by some experts.
         % So they are treated as normal CJK letters.
         "3041, "3043, "3045, "3047, "3049, "3063, "3083, "3085, "3087, "308E,
-        "309B, "309C, "309D, "309E, "30A1, "30A3, "30A5, "30A7, "30A9, "30C3,
-        "30E3, "30E5, "30E7, "30EE, "30F5, "30F6, "30FB, "30FC, "30FD, "30FE,
+        "3095, "3096, "30A1, "30A3, "30A5, "30A7, "30A9, "30C3, "30E3, "30E5,
+        "30E7, "30EE, "30F5, "30F6, "30FC, "31F0, "31F1, "31F2, "31F3, "31F4,
+        "31F5, "31F6, "31F7, "31F8, "31F9, "31FA, "31FB, "31FC, "31FD, "31FE,
+        "31FF, "309D, "309E, "30FD, "30FE,
       }
     \xeCJKDeclareCharClass { FullRight }
       {
         % U+2015 is treated same as U+2014.
-        "2015,
+        "2015, "309B, "309C,
       }
   }
 
 %% Dispatches adjustment if 'adjustcharclass' option is set.
 \bool_if:NT \l__zxjt_adjustcharclass_bool
   {
-    \__zxjt_adjust_charclass:
+    \bool_if:NTF \l__zxjt_kanakinsoku_bool
+      { \__zxjt_adjust_charclass:n { FullRight } }
+      { \__zxjt_adjust_charclass:n { CJK } }
     \xeCJKsetup { LongPunct+ = { ^^^^2015 } }
   }
 
