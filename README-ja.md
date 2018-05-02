@@ -33,6 +33,9 @@ zxjatype パッケージ ― 本体
 更新履歴
 --------
 
+  * Version 0.6c ‹2018/05/03›
+      - バグ修正。
+
   * Version 0.6b ‹2017/08/03›
       - (試験的) `(no)useinhibitglue` オプション。
       - (試験的) `(no)kanakinsoku` オプション。

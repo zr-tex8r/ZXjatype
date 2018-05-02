@@ -44,6 +44,7 @@ All other options are passed to xeCJK.
 Revision History
 ----------------
 
+  * Version 0.6c ‹2018/05/03›
   * Version 0.6b ‹2017/08/03›
   * Version 0.6a ‹2017/08/02›
   * Version 0.6  ‹2012/09/09›
