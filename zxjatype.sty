@@ -1,7 +1,7 @@
 %%
 %% This is file 'zxjatype.sty'.
 %% 
-%% Copyright (c) 2018 Takayuki YATO (aka. "ZR")
+%% Copyright (c) 2009-2020 Takayuki YATO (aka. "ZR")
 %%   GitHub:   https://github.com/zr-tex8r
 %%   Twitter:  @zr_tex8r
 %%
@@ -10,11 +10,12 @@
 
 %% package declaration
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{zxjatype}[2018/05/03 v0.6c ZX Japanese typeset]
+\ProvidesPackage{zxjatype}[2020/02/02 v0.7-pre ZX Japanese typeset]
 \RequirePackage{ifxetex}\RequireXeTeX
 
 %% code guards
 \edef\zxjt@restore@codes{%
+  \catcode33=\the\catcode33%
   \catcode34=\the\catcode34%
   \catcode39=\the\catcode39%
   \catcode43=\the\catcode43%
@@ -24,11 +25,13 @@
   \catcode58=\the\catcode58%
   \catcode60=\the\catcode60%
   \catcode62=\the\catcode62%
-  \catcode63=\the\catcode63%
   \catcode94=\the\catcode94%
   \catcode96=\the\catcode96%
+  \catcode124=\the\catcode124%
+  \catcode126=\the\catcode126%
   \endlinechar=\the\endlinechar%
 \relax}
+\catcode33=12 % <!>
 \catcode34=12 % <">
 \catcode39=12 % <'>
 \catcode43=12 % <+>
@@ -38,9 +41,10 @@
 \catcode58=12 % <:>
 \catcode60=12 % <<>
 \catcode62=12 % <>>
-\catcode63=12 % <?>
 \catcode94=7 % <^>
 \catcode96=12 % <`>
+\catcode124=12 % <|>
+\catcode126=13 % <~>
 \AtEndOfPackage{%
   \zxjt@restore@codes
   \let\zxjt@restore@codes\@undefined
@@ -49,7 +53,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BOOTSTRAP CODE
-% 
+%
 
 %% definitions
 \def\zxjt@pkgname{zxjatype}
@@ -58,7 +62,7 @@
 \newif\ifzxjt@adjustcharclass
 \newif\ifzxjt@kanakinsoku
 \newif\ifzxjt@useinhibitglue
-\providecommand*\bxDebug{\@gobble}
+\providecommand\bxDebug[1]{}
 
 %% process options
 \DeclareOption{default}{\zxjt@defaulttrue}
@@ -90,6 +94,10 @@
   \let\zxjt@go@to@main\@empty
 }{%
   \bxDebug{xeCJK v2.x found.}%
+  \PackageWarningNoLine\zxjt@pkgname
+   {!!!!!!!! IMPORTANT !!!!!!!!\MessageBreak
+    Support for xeCJK v2.x will be *dropped*\MessageBreak
+    in the near future}
   \long\def\zxjt@go@to@main#1\zxjt@begin@old@code{}%
 }
 
