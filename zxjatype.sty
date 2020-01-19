@@ -62,6 +62,7 @@
 \newif\ifzxjt@adjustcharclass
 \newif\ifzxjt@kanakinsoku
 \newif\ifzxjt@useinhibitglue
+\newif\ifzxjt@prefercjk
 \providecommand\bxDebug[1]{}
 
 %% process options
@@ -80,6 +81,8 @@
 \DeclareOption{nokanakinsoku}{\zxjt@kanakinsokufalse}
 \DeclareOption{useinhibitglue}{\zxjt@useinhibitgluetrue}
 \DeclareOption{nouseinhibitglue}{\zxjt@useinhibitgluefalse}
+\DeclareOption{prefercjk}{\zxjt@prefercjktrue}
+\DeclareOption{noprefercjk}{\zxjt@prefercjkfalse}
 %
 \DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xeCJK}}
 \ExecuteOptions{default,CJKchecksingle,adjustcharclass}
@@ -137,6 +140,11 @@
 \bool_new:N \l__zxjt_useinhibitglue_bool
 \ifzxjt@useinhibitglue
     \bool_set_true:N \l__zxjt_useinhibitglue_bool
+\fi
+%% \l__zxjt_prefercjk_bool
+\bool_new:N \l__zxjt_prefercjk_bool
+\ifzxjt@prefercjk
+    \bool_set_true:N \l__zxjt_prefercjk_bool
 \fi
 
 %%-------------------------------------- error messages
@@ -525,6 +533,36 @@
       { \__zxjt_adjust_charclass:n { FullRight } }
       { \__zxjt_adjust_charclass:n { CJK } }
     \xeCJKsetup { LongPunct+ = { ^^^^2015 } }
+  }
+
+\bool_if:NT \l__zxjt_prefercjk_bool
+  {
+    \clist_map_inline:nn
+      {
+        "2002, "2010, "2011, "2016, "201A, "201E, "2020, "2021,
+        "2022, "2030, "2032, "2033, "2039, "203A, "203B, "203C,
+        "203E, "203F, "2042, "2044, "2047, "2048, "2049, "2051
+      }
+      { \XeTeXcharclass #1 = \c__zxjt_CJK_class_int }
+    \clist_map_inline:nn
+      {
+        { "2070, "243F },
+        { "2460, "27BF },
+        { "2900, "29FF },
+        { "2B00, "2BFF },
+        { "FE50, "FE6F },
+        { "1F100, "1F1DF }
+      }
+      {
+        \clist_set:Nn \l_tmpa_clist {#1}
+        \int_step_inline:nnn
+          { \clist_item:Nn \l_tmpa_clist { 1 } }
+          { \clist_item:Nn \l_tmpa_clist { 2 } }
+          {
+            \int_compare:nNnF { \XeTeXcharclass ##1 } = { \c__zxjt_CJK_class_int }
+              { \XeTeXcharclass ##1 = \c__zxjt_CJK_class_int }
+          }
+      }
   }
 
 %%-------------------------------------- public commands
