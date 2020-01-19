@@ -618,23 +618,25 @@
       }
   }
 
-%% \__zxjt_scale_tl
+%% \l__zxjt_scale_tl
 % The scale value to be applied to CJK fonts.
-\tl_new:N \__zxjt_scale_tl
+\tl_new:N \l__zxjt_scale_tl
 %% \l__zxjt_scale_spec_tl
 \tl_new:N \l__zxjt_scale_spec_tl
 
 %%<*> \setjafontscale{<real>}
-%% Sets the value of \__zxjt_scale_tl, which defaults to 1.
+%% Sets the value of \l__zxjt_scale_tl, which defaults to 1.
 \NewDocumentCommand \setjafontscale { m }
   {
     % NB: the argument is not expanded
-    \tl_set:Nn \__zxjt_scale_tl { #1 }
-    \tl_if_blank:VTF \__zxjt_scale_tl
+    \tl_set:Nn \l__zxjt_scale_tl { #1 }
+    \tl_set_eq:NN \zxjatypeJaScale \l__zxjt_scale_tl
+    \tl_set_eq:cN { __zxjt_scale_tl } \l__zxjt_scale_tl
+    \tl_if_blank:VTF \l__zxjt_scale_tl
       { \tl_clear:N \l__zxjt_scale_spec_tl }
-      { 
+      {
         \tl_set:Nn \l__zxjt_scale_spec_tl
-          { Scale = \__zxjt_scale_tl , }
+          { Scale = \l__zxjt_scale_tl , }
       }
   }
 
