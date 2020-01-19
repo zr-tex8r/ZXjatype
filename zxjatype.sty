@@ -166,8 +166,8 @@
   }
 \__zxjt_msg_new:nn { jafamilyinverbatim-disabled }
   {
-    \token_to_str:N \(no)jafamilyinverbatim \c_space_tl
-    ~is~disabled~in~this~version.
+    \token_to_str:N \( no)jafamilyinverbatim~
+    is~disabled~in~this~version.
   }
 \__zxjt_msg_new:nn { CJKfam-failed }
   {
@@ -197,9 +197,9 @@
 % (A mere \scan_stop: suffices?)
 \cs_new:Nn \__zxjt_boundary:
   {
-    \ifhmode
+    \if_mode_horizontal:
         \hbox:n {}
-    \fi
+    \fi:
   }
 
 %% \__zxjt_leavevmode:
@@ -275,7 +275,7 @@
 \AtBeginDocument
   {
     \cs_set_eq:NN \__zxjt_after_decl_CJKfam:n \__zxjt_after_decl_CJKfam_db:n
-    \seq_remove_duplicates:N \g__zxjt_CJKfam_seq
+    \seq_gremove_duplicates:N \g__zxjt_CJKfam_seq
     \seq_map_function:NN \g__zxjt_CJKfam_seq \__zxjt_after_decl_CJKfam:n
     \seq_gclear:N \g__zxjt_CJKfam_seq
   }
@@ -348,7 +348,7 @@
     \bxDebug { family( #1 )~<=~ \g__zxjt_onefam_info_tl }
     \tl_if_empty:NF \g__zxjt_onefam_info_tl
       {
-        \prop_put:NnV \g__zxjt_CJKfam_prop { #1 } \g__zxjt_onefam_info_tl
+        \prop_gput:NnV \g__zxjt_CJKfam_prop { #1 } \g__zxjt_onefam_info_tl
       }
   }
 
@@ -376,6 +376,8 @@
 % The encoding used for CJK-families.
 \tl_new:N \g__zxjt_encoding_tl
 \tl_gset:Nn \g__zxjt_encoding_tl { EU1 }
+\cs_if_exist:NT \g_fontspec_encoding_tl
+  { \tl_set_eq:NN \g__zxjt_encoding_tl \g_fontspec_encoding_tl }
 
 %% \__zxjt_use_CJKfam:
 % Switches the NFSS family to the family corresponding to the current CJK-
@@ -665,11 +667,11 @@
       {
         \cs_set:Npn \>
           {
-            \ifmmode
+            \if_mode_math:
                 \mskip \medmuskip
-            \else
+            \else:
                 \CJKecglue \scan_stop:
-            \fi
+            \fi:
           }
       }
   }
