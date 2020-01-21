@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{zxjatype}[2020/02/02 v0.7-pre ZX Japanese typeset]
+\ProvidesPackage{zxjatype}[2020/01/22 v0.7 ZX Japanese typeset]
 \RequirePackage{ifxetex}\RequireXeTeX
 
 %% code guards
@@ -625,6 +625,10 @@
 \tl_new:N \l__zxjt_scale_tl
 %% \l__zxjt_scale_spec_tl
 \tl_new:N \l__zxjt_scale_spec_tl
+
+%%<+> \zxjatypeJaScale
+% The scale value to be applied to CJK fonts.
+% (Same as \l__zxjt_scale_tl, but developer-level public.)
 
 %%<*> \setjafontscale{<real>}
 %% Sets the value of \l__zxjt_scale_tl, which defaults to 1.
